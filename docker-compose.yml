@@ -9,3 +9,10 @@ services:
       - "3000:3000"
     volumes:
       - .:/app
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+    command: ["npm", "run", "test"]
