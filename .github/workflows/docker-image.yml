@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Tests
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
+    - name: Build Docker image and run tests
       run:  |
         docker build . --file Dockerfile.dev --tag marcusbalbi/docker-ci-example-frontend:latest
         docker run -e CI=true marcusbalbi/docker-ci-example-frontend:latest npm run test
