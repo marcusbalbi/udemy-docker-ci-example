@@ -15,8 +15,8 @@ jobs:
       run:  |
         docker build . --file Dockerfile.dev --tag marcusbalbi/docker-ci-example-frontend:test
         docker run -e CI=true marcusbalbi/docker-ci-example-frontend:test npm run test
-  
-  build-deploy:
+
+  build-docker-image:
     needs: build-test
     runs-on: ubuntu-latest
 
@@ -25,6 +25,13 @@ jobs:
 
       - name: Build Docker image
         run:  docker build . --tag marcusbalbi/docker-ci-example-frontend:$(date +%s)
+  
+  deploy:
+    needs: build-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
       
       - name: Generate Deployment Package
         run: zip -r deploy.zip *
