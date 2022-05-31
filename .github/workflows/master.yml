@@ -7,7 +7,6 @@ on:
 jobs:
 
   build-test:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -18,6 +17,7 @@ jobs:
         docker run -e CI=true marcusbalbi/docker-ci-example-frontend:test npm run test
   
   build-deploy:
+    needs: build-test
     runs-on: ubuntu-latest
 
     steps:
@@ -45,7 +45,7 @@ jobs:
       - name: Deploy to EB
         uses: einaregilsson/beanstalk-deploy@v14
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_access_key: ${{ secrets.AWS_SECRET_KEY }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: docker-ci-example-frontend
           environment_name: Dockerreact-env
