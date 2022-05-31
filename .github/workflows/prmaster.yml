@@ -1,0 +1,18 @@
+name: master-pipeline
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Docker image and run tests
+      run:  |
+        docker build . --file Dockerfile.dev --tag marcusbalbi/docker-ci-example-frontend:test
+        docker run -e CI=true marcusbalbi/docker-ci-example-frontend:test npm run test

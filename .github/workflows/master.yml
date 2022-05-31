@@ -1,0 +1,54 @@
+name: master-pipeline
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+
+  build-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build Docker image and run tests
+      run:  |
+        docker build . --file Dockerfile.dev --tag marcusbalbi/docker-ci-example-frontend:test
+        docker run -e CI=true marcusbalbi/docker-ci-example-frontend:test npm run test
+  
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run:  docker build . --tag marcusbalbi/docker-ci-example-frontend:$(date +%s)
+      
+      - name: Generate Deployment Package
+        run: zip -r deploy.zip *
+
+      - name: Get timestamp
+        uses: gerred/actions/current-time@master
+        id: current-time
+        
+      - name: Run string replace
+        uses: frabert/replace-string-action@master
+        id: format-time
+        with:
+          pattern: '[:\.]+'
+          string: "${{ steps.current-time.outputs.time }}"
+          replace-with: '-'
+          flags: 'g'
+
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v14
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: docker-ci-example-frontend
+          environment_name: Dockerreact-env
+          version_label: "docker-ci-example-${{ steps.format-time.outputs.replaced }}"
+          region: us-east-2
+          deployment_package: deploy.zip
